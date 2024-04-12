@@ -1,4 +1,4 @@
-package com.greenatom.noticeboards.noticeboards;
+package com.greenatom.noticeboards;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

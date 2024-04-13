@@ -1,5 +1,6 @@
 package com.greenatom.noticeboards.service.impl;
 
+import com.greenatom.noticeboards.exceptions.InvalidInputException;
 import com.greenatom.noticeboards.exceptions.NotFoundException;
 import com.greenatom.noticeboards.model.dto.NewTopic;
 import com.greenatom.noticeboards.model.dto.Topic;
@@ -68,7 +69,7 @@ public class TopicServiceImlp implements TopicService {
 
     @Override
     public TopicWithMessages getTopicById(String topicId) {
-        return topicRepository.findById(UUID.fromString(topicId))
+        return topicRepository.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с указанным ID не найден"));
     }
 
@@ -99,10 +100,17 @@ public class TopicServiceImlp implements TopicService {
     @Override
     @Transactional
     public void deleteTopicById(String topicId) {
-        TopicWithMessages topic = topicRepository.findById(UUID.fromString(topicId))
+        TopicWithMessages topic = topicRepository.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
         topicRepository.delete(topic);
     }
 
+    private UUID convertToUUID(String id){
+        try {
+            return UUID.fromString(id);
+        }catch (IllegalArgumentException e){
+            throw new InvalidInputException(e.getMessage());
+        }
+    }
 }
 

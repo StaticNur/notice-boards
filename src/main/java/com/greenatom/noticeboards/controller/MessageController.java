@@ -7,13 +7,13 @@ import com.greenatom.noticeboards.model.dto.MessageDto;
 import com.greenatom.noticeboards.model.entity.TopicWithMessages;
 import com.greenatom.noticeboards.service.MessageService;
 import com.greenatom.noticeboards.util.GeneratorResponseMessage;
-import com.greenatom.noticeboards.util.ValidateFormat;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +26,12 @@ import java.util.List;
 @RequestMapping("/api/v1")
 @Tag(name = "Message Controller", description = "Message API")
 public class MessageController {
-    private final ValidateFormat validateFormat;
     private final GeneratorResponseMessage generatorResponseMessage;
     private final MessageService messageService;
 
     @Autowired
-    public MessageController(ValidateFormat validateFormat,
-                             GeneratorResponseMessage generatorResponseMessage,
+    public MessageController(GeneratorResponseMessage generatorResponseMessage,
                              MessageService messageService) {
-        this.validateFormat = validateFormat;
         this.generatorResponseMessage = generatorResponseMessage;
         this.messageService = messageService;
     }
@@ -44,6 +41,7 @@ public class MessageController {
     @Operation(summary = "Delete an existing message by Id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Успешное выполнение запроса."),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public void deleteMessage(@PathVariable("messageId") String messageId) {
@@ -59,9 +57,8 @@ public class MessageController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public ResponseEntity<?> createMessage(@PathVariable("topicId") String topicId,
-                                                           @RequestBody MessageDto messageDto,
+                                                           @RequestBody @Valid MessageDto messageDto,
                                                            BindingResult bindingResult) {
-        validateFormat.validate(messageDto, bindingResult);
         if (bindingResult.hasErrors()) {
             List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
             return ResponseEntity.badRequest().body(customFieldErrors);
@@ -78,7 +75,13 @@ public class MessageController {
             @ApiResponse(responseCode = "422", description = "Ошибка валидации. Подробности об ошибках содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    public ResponseEntity<TopicWithMessages> updateMessage(@PathVariable String topicId, @RequestBody Message message) {
+    public ResponseEntity<?> updateMessage(@PathVariable String topicId,
+                                                           @RequestBody Message message,
+                                                           BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
+            return ResponseEntity.badRequest().body(customFieldErrors);
+        }
         return ResponseEntity.ok(messageService.updateMessage(topicId, message));
     }
 

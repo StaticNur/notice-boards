@@ -1,5 +1,7 @@
 package com.greenatom.noticeboards.controller;
 
+import com.greenatom.noticeboards.exceptions.InvalidInputException;
+import com.greenatom.noticeboards.exceptions.NotFoundException;
 import com.greenatom.noticeboards.model.dto.ExceptionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,11 @@ public class GlobalExceptionHandlerController {
                 .body(new ExceptionResponse(e.getMessage()));
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ExceptionHandler({
+            MissingServletRequestParameterException.class,
+            InvalidInputException.class,
+            NotFoundException.class
+    })
     public ResponseEntity<ExceptionResponse> handleBadRequestException(Exception e) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(e.getMessage()));
     }

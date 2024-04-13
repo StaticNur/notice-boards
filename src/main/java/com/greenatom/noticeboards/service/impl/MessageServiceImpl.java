@@ -1,5 +1,6 @@
 package com.greenatom.noticeboards.service.impl;
 
+import com.greenatom.noticeboards.exceptions.InvalidInputException;
 import com.greenatom.noticeboards.exceptions.NotFoundException;
 import com.greenatom.noticeboards.model.entity.Message;
 import com.greenatom.noticeboards.model.dto.MessageDto;
@@ -30,7 +31,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public TopicWithMessages updateMessage(String topicId, Message updatedMessage) {
-        TopicWithMessages topic = topicService.findById(UUID.fromString(topicId))
+        TopicWithMessages topic = topicService.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с указанным ID не найден"));
 
         Optional<Message> optionalMessage = topic.getMessages().stream()
@@ -53,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public void deleteAll(String topicId) {
-        TopicWithMessages topic = topicService.findById(UUID.fromString(topicId))
+        TopicWithMessages topic = topicService.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
 
         List<Message> messages = topic.getMessages();
@@ -64,7 +65,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public TopicWithMessages createMessage(String topicId, MessageDto messageDto) {
-        TopicWithMessages topic = topicService.findById(UUID.fromString(topicId))
+        TopicWithMessages topic = topicService.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
 
         Message message = buildMessageFromDto(messageDto);
@@ -80,7 +81,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public void deleteMessageById(String messageId) {
-        Message message = messageRepository.findById(UUID.fromString(messageId))
+        Message message = messageRepository.findById(convertToUUID(messageId))
                 .orElseThrow(() -> new NotFoundException("Сообщение с указанным ID не найдено"));
 
         if (message.getOwner() != null) {
@@ -90,7 +91,7 @@ public class MessageServiceImpl implements MessageService {
             if (messages.size() > 1) {
                 messages.remove(message);
                 topicService.save(topic);
-                messageRepository.deleteById(UUID.fromString(messageId));
+                messageRepository.deleteById(convertToUUID(messageId));
             }
         }
     }
@@ -102,5 +103,13 @@ public class MessageServiceImpl implements MessageService {
         message.setAuthor(messageDto.getAuthor());
         message.setCreated(ZonedDateTime.now());
         return message;
+    }
+
+    private UUID convertToUUID(String id){
+        try {
+            return UUID.fromString(id);
+        }catch (IllegalArgumentException e){
+            throw new InvalidInputException(e.getMessage());
+        }
     }
 }

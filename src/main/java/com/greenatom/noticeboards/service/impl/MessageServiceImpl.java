@@ -51,8 +51,15 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void delete(Message message) {
-        messageRepository.delete(message);
+    @Transactional
+    public void deleteAll(String topicId) {
+        TopicWithMessages topic = topicService.findById(UUID.fromString(topicId))
+                .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
+
+        List<Message> messages = topic.getMessages();
+        for (Message message : messages) {
+            messageRepository.delete(message);
+        }
     }
 
     @Override

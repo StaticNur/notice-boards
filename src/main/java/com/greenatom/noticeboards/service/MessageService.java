@@ -11,5 +11,5 @@ public interface MessageService {
 
     TopicWithMessages updateMessage(String topicId, Message message);
 
-    void delete(Message message);
+    void deleteAll(String topicId);
 }

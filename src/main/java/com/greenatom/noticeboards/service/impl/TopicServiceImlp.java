@@ -21,12 +21,10 @@ import java.util.UUID;
 @Service
 public class TopicServiceImlp implements TopicService {
 
-    private final MessageService messageService;
     private final TopicRepository topicRepository;
 
     @Autowired
-    public TopicServiceImlp(MessageService messageService, TopicRepository topicRepository) {
-        this.messageService = messageService;
+    public TopicServiceImlp(TopicRepository topicRepository) {
         this.topicRepository = topicRepository;
     }
 
@@ -70,7 +68,7 @@ public class TopicServiceImlp implements TopicService {
 
     @Override
     public TopicWithMessages getTopicById(String topicId) {
-        return topicRepository.findById(topicId)
+        return topicRepository.findById(UUID.fromString(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с указанным ID не найден"));
     }
 
@@ -103,12 +101,6 @@ public class TopicServiceImlp implements TopicService {
     public void deleteTopicById(String topicId) {
         TopicWithMessages topic = topicRepository.findById(UUID.fromString(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
-
-        List<Message> messages = topic.getMessages();
-        for (Message message : messages) {
-            messageService.delete(message);
-        }
-
         topicRepository.delete(topic);
     }
 

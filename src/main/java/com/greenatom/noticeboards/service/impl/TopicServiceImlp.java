@@ -10,14 +10,14 @@ import com.greenatom.noticeboards.repository.TopicRepository;
 import com.greenatom.noticeboards.service.MessageService;
 import com.greenatom.noticeboards.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TopicServiceImlp implements TopicService {
@@ -54,23 +54,38 @@ public class TopicServiceImlp implements TopicService {
     }
 
     @Override
-    public List<Topic> getAllTopics() {
-        List<Topic> topics = new ArrayList<>();
-        List<TopicWithMessages> topicWithMessages = topicRepository.findAll();
-        for (TopicWithMessages t : topicWithMessages) {
-            topics.add(Topic.builder()
-                    .id(t.getId())
-                    .name(t.getName())
-                    .created(t.getCreated())
-                    .build());
-        }
-        return topics;
+    public List<Topic> getAllTopics(Pageable pageable) {
+        return topicRepository.findAll(pageable)
+                .stream()
+                .map(t -> Topic.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .created(t.getCreated())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override
-    public TopicWithMessages getTopicById(String topicId) {
-        return topicRepository.findById(convertToUUID(topicId))
+    public TopicWithMessages getTopicMessagesById(String topicId, int page, int size) {
+        TopicWithMessages topicWithMessages = topicRepository.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с указанным ID не найден"));
+
+        int startItem = page * size;
+
+        List<Message> messages = topicWithMessages.getMessages();
+
+        List<Message> pageMessages;
+
+        if (messages.size() < startItem) {
+            pageMessages = Collections.emptyList();
+        } else {
+            int toIndex = Math.min(startItem + size, messages.size());
+            pageMessages = messages.subList(startItem, toIndex);
+        }
+
+        topicWithMessages.setMessages(pageMessages);
+
+        return topicWithMessages;
     }
 
     @Override
@@ -105,10 +120,10 @@ public class TopicServiceImlp implements TopicService {
         topicRepository.delete(topic);
     }
 
-    private UUID convertToUUID(String id){
+    private UUID convertToUUID(String id) {
         try {
             return UUID.fromString(id);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             throw new InvalidInputException(e.getMessage());
         }
     }

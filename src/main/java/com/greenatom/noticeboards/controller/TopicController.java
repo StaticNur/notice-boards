@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -51,7 +53,7 @@ public class TopicController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public ResponseEntity<?> createTopic(@RequestBody @Valid NewTopic newTopic,
-                                                         BindingResult bindingResult) {
+                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
             return ResponseEntity.badRequest().body(customFieldErrors);
@@ -69,7 +71,7 @@ public class TopicController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public ResponseEntity<?> updateTopic(@RequestBody @Valid Topic topic,
-                                                         BindingResult bindingResult) {
+                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
             return ResponseEntity.badRequest().body(customFieldErrors);
@@ -85,8 +87,10 @@ public class TopicController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.",
                     content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    public ResponseEntity<List<Topic>> listAllTopics() {
-        return ResponseEntity.ok(topicService.getAllTopics());
+    public ResponseEntity<List<Topic>> listAllTopics(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                     @RequestParam(value = "size", defaultValue = "10") int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(topicService.getAllTopics(pageable));
     }
 
     @DeleteMapping("/topic/{topicId}")
@@ -108,8 +112,10 @@ public class TopicController {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса. Возвращенные данные в теле ответа.", content = @Content(schema = @Schema(implementation = TopicWithMessages.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    public ResponseEntity<TopicWithMessages> getTopicWithMessages(@PathVariable("topicId") String topicId) {
-        return ResponseEntity.ok(topicService.getTopicById(topicId));
+    public ResponseEntity<TopicWithMessages> getTopicWithMessages(@PathVariable("topicId") String topicId,
+                                                                  @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                  @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ResponseEntity.ok(topicService.getTopicMessagesById(topicId, page, size));
     }
 
 

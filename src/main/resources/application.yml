@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: notice-boards
+  jwt:
+    secret: XQyB0Xw4ufLyU/w7uZKf1kcqrdxJCWA/vwxjNNhALQE=
+    access: 7200000
+    refresh: 2592000000
+  h2:
+    console:
+      enabled: true
+  flyway:
+    enabled: true
+    schemas: forum_engine_data
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: forum_engine_data
+        show_sql: true
+    hibernate:
+      ddl-auto: update
+
+# DataSource configuration for acq (H2 in-memory)
+acq:
+  clients:
+    pool-name: acq
+  datasource:
+    jdbcUrl: jdbc:h2:mem:test_db
+    username: sa
+    password:
+    driverClassName: org.h2.Driver

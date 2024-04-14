@@ -1,5 +1,6 @@
 package com.greenatom.noticeboards.controller;
 
+import com.greenatom.noticeboards.exceptions.AccessDeniedException;
 import com.greenatom.noticeboards.model.dto.CustomFieldError;
 import com.greenatom.noticeboards.model.dto.ExceptionResponse;
 import com.greenatom.noticeboards.model.entity.Message;
@@ -17,6 +18,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +48,19 @@ public class MessageController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public void deleteMessage(@PathVariable("messageId") String messageId) {
-        messageService.deleteMessageById(messageId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            if (authentication.getAuthorities()
+                    .stream().allMatch(authority -> "ADMIN".equals(authority.getAuthority()))) {
+                messageService.deleteMessageById(messageId);
+            }else {
+                String username = authentication.getName();
+                Message message = messageService.findById(messageId);
+                if (message.getAuthor().equals(username)) {
+                    messageService.deleteMessageById(messageId);
+                } else throw new AccessDeniedException("Access denied. You can only delete your own messages");
+            }
+        }
     }
 
     @PostMapping("/topic/{topicId}/message")
@@ -57,8 +72,8 @@ public class MessageController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public ResponseEntity<?> createMessage(@PathVariable("topicId") String topicId,
-                                                           @RequestBody @Valid MessageDto messageDto,
-                                                           BindingResult bindingResult) {
+                                           @RequestBody @Valid MessageDto messageDto,
+                                           BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
             return ResponseEntity.badRequest().body(customFieldErrors);
@@ -76,13 +91,25 @@ public class MessageController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера. Подробности об ошибке содержатся в теле ответа.", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     public ResponseEntity<?> updateMessage(@PathVariable String topicId,
-                                                           @RequestBody Message message,
-                                                           BindingResult bindingResult) {
+                                           @RequestBody Message message,
+                                           BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<CustomFieldError> customFieldErrors = generatorResponseMessage.generateErrorMessage(bindingResult);
             return ResponseEntity.badRequest().body(customFieldErrors);
         }
-        return ResponseEntity.ok(messageService.updateMessage(topicId, message));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            if (authentication.getAuthorities()
+                    .stream().allMatch(authority -> "ADMIN".equals(authority.getAuthority()))) {
+                return ResponseEntity.ok(messageService.updateMessage(topicId, message));
+            }else {
+                String username = authentication.getName();
+                if (message.getAuthor().equals(username)) {
+                    return ResponseEntity.ok(messageService.updateMessage(topicId, message));
+                } else throw new AccessDeniedException("Access denied. You can only edit your own messages");
+            }
+        }
+        return ResponseEntity.internalServerError().body("Unknown error. Try logging out and logging in again");
     }
 
 }

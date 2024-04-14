@@ -3,8 +3,8 @@ spring.application.name=notice-boards
 # DataSource configuration for acq (H2 in-memory)
 acq.clients.pool-name=acq
 acq.datasource.jdbcUrl=jdbc:h2:mem:test_db
-acq.datasource.username=user
-acq.datasource.password=psw
+acq.datasource.username=sa
+acq.datasource.password=
 acq.datasource.driverClassName=org.h2.Driver
 spring.h2.console.enabled=true
 

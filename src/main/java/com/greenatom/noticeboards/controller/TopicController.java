@@ -17,10 +17,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,6 +62,7 @@ public class TopicController {
     }
 
     @PutMapping("/topic")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update an existing message by Id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса. Возвращенные данные в теле ответа.", content = @Content(schema = @Schema(implementation = TopicWithMessages.class))),
@@ -94,6 +95,7 @@ public class TopicController {
     }
 
     @DeleteMapping("/topic/{topicId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "delete the topic and all its messages")
     @ApiResponses(value = {
@@ -117,7 +119,6 @@ public class TopicController {
                                                                   @RequestParam(value = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(topicService.getTopicMessagesById(topicId, page, size));
     }
-
 
 }
 

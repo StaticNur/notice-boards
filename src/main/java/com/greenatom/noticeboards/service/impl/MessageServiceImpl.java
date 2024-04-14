@@ -79,6 +79,12 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public Message findById(String messageId) {
+        return messageRepository.findById(convertToUUID(messageId))
+                .orElseThrow(() -> new NotFoundException("Сообщение с указанным ID не найдено"));
+    }
+
+    @Override
     @Transactional
     public void deleteMessageById(String messageId) {
         Message message = messageRepository.findById(convertToUUID(messageId))

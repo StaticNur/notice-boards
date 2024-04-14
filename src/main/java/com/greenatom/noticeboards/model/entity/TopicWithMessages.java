@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "FORUM_ENGINE_DATA.TOPIC")
+@Table(name = "topics", schema = "FORUM_ENGINE_DATA")
 @AllArgsConstructor
 @NoArgsConstructor
 public class TopicWithMessages {
@@ -23,7 +23,7 @@ public class TopicWithMessages {
     private String name;
     @Column(name = "created")
     private ZonedDateTime created;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Message> messages;
 }

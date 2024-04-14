@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "FORUM_ENGINE_DATA.MESSAGE")
+@Table(name = "messages", schema = "FORUM_ENGINE_DATA")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Message {

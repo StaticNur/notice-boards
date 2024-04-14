@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class NoticeBoardsApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(NoticeBoardsApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(NoticeBoardsApplication.class, args);
+    }
 
 }

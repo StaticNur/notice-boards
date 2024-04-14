@@ -64,6 +64,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional
     public TopicWithMessages createMessage(String topicId, MessageDto messageDto) {
         TopicWithMessages topic = topicService.findById(convertToUUID(topicId))
                 .orElseThrow(() -> new NotFoundException("Топик с таким ID не существует"));
@@ -111,10 +112,10 @@ public class MessageServiceImpl implements MessageService {
         return message;
     }
 
-    private UUID convertToUUID(String id){
+    private UUID convertToUUID(String id) {
         try {
             return UUID.fromString(id);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             throw new InvalidInputException(e.getMessage());
         }
     }

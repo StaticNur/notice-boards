@@ -53,7 +53,7 @@ public class MessageController {
             if (authentication.getAuthorities()
                     .stream().allMatch(authority -> "ADMIN".equals(authority.getAuthority()))) {
                 messageService.deleteMessageById(messageId);
-            }else {
+            } else {
                 String username = authentication.getName();
                 Message message = messageService.findById(messageId);
                 if (message.getAuthor().equals(username)) {
@@ -102,7 +102,7 @@ public class MessageController {
             if (authentication.getAuthorities()
                     .stream().allMatch(authority -> "ADMIN".equals(authority.getAuthority()))) {
                 return ResponseEntity.ok(messageService.updateMessage(topicId, message));
-            }else {
+            } else {
                 String username = authentication.getName();
                 if (message.getAuthor().equals(username)) {
                     return ResponseEntity.ok(messageService.updateMessage(topicId, message));

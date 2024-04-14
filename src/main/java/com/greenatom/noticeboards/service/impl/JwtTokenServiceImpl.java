@@ -6,34 +6,29 @@ import com.greenatom.noticeboards.model.enums.Role;
 import com.greenatom.noticeboards.service.JwtTokenService;
 import com.greenatom.noticeboards.service.UserService;
 import com.greenatom.noticeboards.util.JwtProperties;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
 import java.nio.file.AccessDeniedException;
 import java.security.Key;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-
 
 @Service
 public class JwtTokenServiceImpl implements JwtTokenService {
     private final JwtProperties properties;
     private final UserService userService;
     private Key key;
-    private byte[] secret;
+
     @Autowired
     public JwtTokenServiceImpl(JwtProperties properties, UserService userService) {
         this.properties = properties;
@@ -42,9 +37,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
 
     @PostConstruct
     public void init() {
-        this.secret = properties.getSecret().getBytes();
-        this.key = Keys.hmacShaKeyFor(this.secret);
-        //this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.key = Keys.hmacShaKeyFor(properties.getSecret().getBytes());
     }
 
     @Override
@@ -61,7 +54,6 @@ public class JwtTokenServiceImpl implements JwtTokenService {
                 .compact();
     }
 
-
     @Override
     public String createRefreshToken(String login, Role role) {
         Claims claims = Jwts.claims().setSubject(login);
@@ -75,7 +67,6 @@ public class JwtTokenServiceImpl implements JwtTokenService {
                 .signWith(key)
                 .compact();
     }
-
 
     @Override
     public JwtResponse refreshUserTokens(String refreshToken) throws AccessDeniedException {
@@ -122,7 +113,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
     @Override
     public Role extractRoles(String token) {
         Optional<Claims> claims = extractAllClaims(token);
-        if (claims.isEmpty()){
+        if (claims.isEmpty()) {
             throw new InvalidTokenException("Invalid token.");
         }
         String roleStr = claims.get().get("role", String.class);
@@ -145,17 +136,4 @@ public class JwtTokenServiceImpl implements JwtTokenService {
         }
     }
 
-
-    /*private Key signKey() {
-        return Keys.hmacShaKeyFor(secret);
-    }
-
-    private String getLoginFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }*/
 }

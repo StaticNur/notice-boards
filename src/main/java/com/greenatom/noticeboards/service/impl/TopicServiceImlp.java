@@ -7,13 +7,9 @@ import com.greenatom.noticeboards.model.dto.Topic;
 import com.greenatom.noticeboards.model.entity.Message;
 import com.greenatom.noticeboards.model.entity.TopicWithMessages;
 import com.greenatom.noticeboards.repository.TopicRepository;
-import com.greenatom.noticeboards.service.MessageService;
 import com.greenatom.noticeboards.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,6 +92,7 @@ public class TopicServiceImlp implements TopicService {
     }
 
     @Override
+    @Transactional
     public void save(TopicWithMessages topic) {
         topicRepository.save(topic);
     }

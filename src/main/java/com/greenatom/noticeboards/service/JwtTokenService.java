@@ -5,7 +5,6 @@ import com.greenatom.noticeboards.model.enums.Role;
 import org.springframework.security.core.Authentication;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 
 
 public interface JwtTokenService {
@@ -21,6 +20,8 @@ public interface JwtTokenService {
     Authentication authentication(String token) throws AccessDeniedException;
 
     boolean validateToken(String token);
+
     Role extractRoles(String token);
+
     String extractUserName(String token);
 }

@@ -16,13 +16,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TopicWithMessages {
+
     @Id
     @Column(name = "id")
     private UUID id;
+
     @Column(name = "name")
     private String name;
+
     @Column(name = "created")
     private ZonedDateTime created;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Message> messages;

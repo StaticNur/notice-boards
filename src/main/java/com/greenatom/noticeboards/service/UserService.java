@@ -7,7 +7,6 @@ import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
 
-
     void insertNewUser(User user);
 
     Optional<User> findByUsername(String login);

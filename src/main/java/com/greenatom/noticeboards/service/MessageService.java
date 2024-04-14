@@ -4,10 +4,9 @@ import com.greenatom.noticeboards.model.entity.Message;
 import com.greenatom.noticeboards.model.dto.MessageDto;
 import com.greenatom.noticeboards.model.entity.TopicWithMessages;
 
-import java.util.Optional;
-
 public interface MessageService {
     Message findById(String messageId);
+
     void deleteMessageById(String messageId);
 
     TopicWithMessages createMessage(String topicId, MessageDto messageDto);

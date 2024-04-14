@@ -1,6 +1,5 @@
 package com.greenatom.noticeboards.util;
 
-
 import com.greenatom.noticeboards.model.dto.CustomFieldError;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Component
 public class GeneratorResponseMessage {
-    public List<CustomFieldError> generateErrorMessage(BindingResult bindingResult){
+    public List<CustomFieldError> generateErrorMessage(BindingResult bindingResult) {
         List<CustomFieldError> errors = new ArrayList<>();
         for (ObjectError error : bindingResult.getAllErrors()) {
             if (error instanceof FieldError fieldError) {

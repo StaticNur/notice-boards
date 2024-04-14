@@ -8,7 +8,6 @@ import org.springframework.core.io.support.PropertySourceFactory;
 
 import java.util.Properties;
 
-
 public class YamlPropertiesUtilFactory implements PropertySourceFactory {
 
     @Override

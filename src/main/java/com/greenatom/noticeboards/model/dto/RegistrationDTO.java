@@ -1,7 +1,6 @@
 package com.greenatom.noticeboards.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record RegistrationDTO(
         @NotBlank(message = "userName не должен быть пустым!") String userName,

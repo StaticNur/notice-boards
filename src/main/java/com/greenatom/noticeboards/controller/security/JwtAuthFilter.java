@@ -21,8 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -48,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (!jwt.isEmpty()) {
                 try {
-                    username = ((UserDetails)jwtTokenService.authentication(jwt).getPrincipal()).getUsername();
+                    username = ((UserDetails) jwtTokenService.authentication(jwt).getPrincipal()).getUsername();
                 } catch (ExpiredJwtException exception) {
                     sendResponse(response, "The token's lifetime has expired.");
                     return;

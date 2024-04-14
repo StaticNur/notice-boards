@@ -1,7 +1,7 @@
 package com.greenatom.noticeboards.service.impl;
 
-
 import com.greenatom.noticeboards.exceptions.AuthorizeException;
+import com.greenatom.noticeboards.exceptions.InvalidInputException;
 import com.greenatom.noticeboards.model.dto.JwtResponse;
 import com.greenatom.noticeboards.model.entity.User;
 import com.greenatom.noticeboards.model.enums.Role;
@@ -24,6 +24,7 @@ public class SecurityServiceImpl implements SecurityService {
     private final UserService userService;
     private final JwtTokenService tokenProvider;
     private final PasswordEncoder passwordEncoder;
+
     @Autowired
     public SecurityServiceImpl(UserService userService,
                                JwtTokenServiceImpl tokenProvider,
@@ -33,20 +34,30 @@ public class SecurityServiceImpl implements SecurityService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public User register(String userName, String password, String role) {
-        Role roleEnum = role.trim().equals("user") ? Role.USER : Role.ADMIN;
-        User user = User.builder()
-                .username(userName)
-                .password(passwordEncoder.encode(password))
-                .active(true)
-                .role(roleEnum)
-                .created(ZonedDateTime.now())
-                .build();
+        Role roleEnum;
+        try {
+            roleEnum = Role.valueOf(role.trim());
+        }catch (RuntimeException e){
+            throw new InvalidInputException("Invalid role. Must be ADMIN or USER");
+        }
+        Optional<User> byUsername = userService.findByUsername(userName);
+        if(byUsername.isEmpty()){
+            User user = User.builder()
+                    .username(userName)
+                    .password(passwordEncoder.encode(password))
+                    .active(true)
+                    .role(roleEnum)
+                    .created(ZonedDateTime.now())
+                    .build();
 
-        userService.insertNewUser(user);
-        return user;
+            userService.insertNewUser(user);
+            return user;
+        }else {
+            throw new InvalidInputException("Пользователь с таким username уже существует, введите что-то другое!");
+        }
     }
 
     @Override

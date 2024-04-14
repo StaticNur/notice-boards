@@ -11,8 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewTopic {
+
     @NotBlank(message = "topicName не должен быть пустым!")
     private String topicName;
+
     @NotNull(message = "message не должен быть пустым!")
     @Valid
     private MessageDto message;
